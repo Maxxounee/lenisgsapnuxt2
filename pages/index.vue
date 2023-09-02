@@ -13,9 +13,9 @@
 </template>
 
 <script>
-import EventsController from "@/components/EventsController.vue";
+import LenisScroll from '../components/LenisScroll.vue'
 export default {
-    components: { EventsController },
+    components: { LenisScroll },
     methods: {
         test(e) {
             // console.log('corner')
