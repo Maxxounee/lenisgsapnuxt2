@@ -10,14 +10,11 @@
 </template>
 
 <script>
-import Lenis from '@studio-freight/lenis'
-import Vue from 'vue';
-import Vue2TouchEvents from 'vue2-touch-events';
-// import device from 'current-device';
-Vue.use(Vue2TouchEvents);
+import Lenis from '@studio-freight/lenis';
+
 export default {
     components: {
-      // [process.client && 'device']: () => import('current-device'),
+        // [process.client && 'device']: () => import('current-device'),
     },
     props: {
         swipeTolerance: {
@@ -51,41 +48,41 @@ export default {
         wheelMultiplier: {
             type: Number,
             default: 1,
-        }
+        },
     },
     watch: {
         'process.client': {
-            handler(value) {
-                console.log('process', value)
+            handler (value) {
+                console.log('process', value);
             },
-        } ,
+        },
     },
-    data() {
-      return {
-          scrollValue: null,
-          corneredTime: null,
-          reachedCorner: null,
-          cornerEventEmitted: false,
-          lenis: null,
-          scrollStartTime: null,
-          lastWheelDirection: null,
-          easingDict: {
-                  default(x) {
-                      return Math.min(1, 1.001 - Math.pow(2, -10 * x));
-                  },
-                easeOutQuad(x) {
+    data () {
+        return {
+            scrollValue: null,
+            corneredTime: null,
+            reachedCorner: null,
+            cornerEventEmitted: false,
+            lenis: null,
+            scrollStartTime: null,
+            lastWheelDirection: null,
+            easingDict: {
+                default (x) {
+                    return Math.min(1, 1.001 - Math.pow(2, -10 * x));
+                },
+                easeOutQuad (x) {
                     return 1 - (1 - x) * (1 - x);
                 },
-                easeInOutQuad(x) {
+                easeInOutQuad (x) {
                     return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
                 },
-                easeOutSine(x) {
+                easeOutSine (x) {
                     return Math.sin((x * Math.PI) / 2);
                 },
-        },
-      };
+            },
+        };
     },
-    mounted() {
+    mounted () {
         let wheelMultiplier = this.wheelMultiplier;
         let duration = this.duration;
         if (this.$device.isMacOS) {
@@ -100,41 +97,46 @@ export default {
             duration,
             wheelMultiplier,
         });
-        this.lenis.on('scroll', this.lenisScroll)
-        requestAnimationFrame(this.raf)
+        this.lenis.on('scroll', this.lenisScroll);
+        requestAnimationFrame(this.raf);
     },
-    beforeDestroy() {
+    beforeDestroy () {
         this.lenis = null;
     },
     methods: {
-        raf(time) {
-            this.lenis.raf(time)
-            requestAnimationFrame(this.raf)
+        raf (time) {
+            this.lenis.raf(time);
+            requestAnimationFrame(this.raf);
         },
-        lenisScroll(e) {
+        lenisScroll (e) {
+            console.log('lenisScroll');
             this.scrollValue = this.lenis.progress;
+            this.$emit('scroll', e);
         },
-        swipe(direction) {
+        swipe (direction) {
             return;
             if (this.swipeEnabled) {
                 if ((direction === 'left' && !this.swipeVertical) || (direction === 'top' && this.swipeVertical)) {
                     this.change({ delta: 1 });
-                } else
-                if ((direction === 'right' && !this.swipeVertical) || (direction === 'bottom' && this.swipeVertical)) {
+                } else if ((direction === 'right' && !this.swipeVertical) || (direction === 'bottom' && this.swipeVertical)) {
                     this.change({ delta: -1 });
                 }
             }
         },
-        isMagicAppleDevice(e) {
+        isMagicAppleDevice (e) {
             const isTouchPad = e.wheelDeltaY ? e.wheelDeltaY === -3 * e.deltaY : e.deltaMode === 0;
             return this.$device.isMacOS && isTouchPad;
         },
-        wheelScroll(e) {
+        wheelScroll (e) {
+            if (!this.scrollValue) {
+                this.scrollValue = this.lenis.progress;
+            }
+
             const currentWheelDirection = e.deltaY > 0 ? 1 : -1;
             const cornerTermZero = this.scrollValue === 0 && currentWheelDirection === -1;
             const cornerTermOne = this.scrollValue === 1 && currentWheelDirection === 1;
 
-            if (!this.corneredTime && this.scrollValue !== null && (cornerTermZero || cornerTermOne)) {
+            if (!this.corneredTime && (cornerTermZero || cornerTermOne)) {
                 this.reachedCorner = this.scrollValue;
                 this.corneredTime = Date.now();
             }
@@ -144,20 +146,19 @@ export default {
             }
 
             this.lastWheelDirection = currentWheelDirection;
-
             if (this.corneredTime && (Date.now() - this.corneredTime > this.cornerEventDelay)) {
                 if (!this.cornerEventEmitted && (cornerTermZero || cornerTermOne)) {
-                    console.log('corner emit', cornerTermOne ? 1 : 0);
+                    this.$emit('cornerEvent', cornerTermOne ? 1 : 0);
                     this.corneredTime = null;
                     this.cornerEventEmitted = true;
                     setTimeout(() => {
                         this.cornerEventEmitted = false;
-                    }, this.cornerEventDelay)
+                    }, this.cornerEventDelay * 2);
                 }
             }
         },
     },
-}
+};
 </script>
 
 <style lang="scss">
