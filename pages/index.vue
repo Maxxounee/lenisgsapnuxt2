@@ -1,26 +1,16 @@
 <template>
-    <div class="index">
-        <LenisScroll
-            @scroll="scroll"
-            @cornerEvent="cornerEvent"
-        >
-            <div class="test">
-                <h1 class="title">AWESOOOOOOOME</h1>
-                <!--                <h1 class="title1">AWESOMEANIMATION</h1>-->
-            </div>
-            <div class="test_2">
-            </div>
-            <div class="test_2">
-            </div>
-            <div class="test_2">
-            </div>
-            <div class="test_2">
-            </div>
-            <!--            <div class="test">-->
-            <!--            </div>-->
-            <!--            <div class="test">-->
-            <!--            </div>-->
-        </LenisScroll>
+    <div class="page index">
+        <div class="test">
+            <h1 class="title">AWESOOOOOOOME</h1>
+        </div>
+        <div class="test_2">
+        </div>
+        <div class="test_2">
+        </div>
+        <div class="test_2">
+        </div>
+        <div class="test_2">
+        </div>
     </div>
 </template>
 
@@ -32,9 +22,8 @@ export default {
         LenisScroll,
     },
     mounted () {
-        // console.log(this.ScrollTrigger);
-        // this.gsap.ScrollTrigger;
-        console.log(this.gsap);
+        this.$nuxt.$on('lenisCorner', this.cornerEvent);
+        this.$nuxt.$on('lenisScroll', this.scrollEvent);
         const tl = this.gsap.timeline(
             {
                 scrollTrigger: {
@@ -58,11 +47,17 @@ export default {
         });
     },
     methods: {
-        scroll (e) {
-            // console.log('index', e);
+        scrollEvent (e) {
+            console.group('%cLENIS SCROLL', 'color: #2F4F4F');
+            console.log('lenisScroll Emitted! --->');
+            console.log(e);
+            console.groupEnd();
         },
         cornerEvent (e) {
-            // console.log('corner', e);
+            console.group('%cLENIS CORNER', 'color: #FFE4B5');
+            console.log('lenisCorner Emitted! --->');
+            console.log(e);
+            console.groupEnd();
         },
     },
 };
