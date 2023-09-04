@@ -15,12 +15,7 @@
 </template>
 
 <script>
-import LenisScroll from '@/components/LenisScroll.vue';
-
 export default {
-    components: {
-        LenisScroll,
-    },
     mounted () {
         this.$nuxt.$on('lenisCorner', this.cornerEvent);
         this.$nuxt.$on('lenisScroll', this.scrollEvent);
@@ -28,8 +23,6 @@ export default {
             {
                 scrollTrigger: {
                     trigger: '.test',
-                    // x: 300,
-                    // scrollTrigger: '.test2',
                     start: 'center center',
                     end: 'bottom center',
                     pin: '.test',
@@ -40,7 +33,6 @@ export default {
         );
         tl.to('.title', {
             x: 166,
-            // y: 100,
             scale: 100,
             opacity: 0,
             ease: false,
@@ -67,8 +59,8 @@ export default {
 @import "@/assets/style/import.scss";
 .index {
     .test {
-        height: 100vh;
         @include flex-center;
+        height: 100vh;
         background-color: $GREEN;
         width: 100vw;
         &_2 {
@@ -79,11 +71,6 @@ export default {
     }
     .title {
         @include font-m;
-    }
-    .end {
-        height: 10px;
-        background-color: darkslateblue;
-        width: 100%;
     }
 }
 </style>

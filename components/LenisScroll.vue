@@ -13,9 +13,6 @@
 import Lenis from '@studio-freight/lenis';
 
 export default {
-    components: {
-        // [process.client && 'device']: () => import('current-device'),
-    },
     props: {
         swipeTolerance: {
             type: Number,
@@ -50,22 +47,12 @@ export default {
             default: 1,
         },
     },
-    watch: {
-        'process.client': {
-            handler (value) {
-                console.log('process', value);
-            },
-        },
-    },
     data () {
         return {
-            scrollValue: null,
             corneredTime: null,
-            reachedCorner: null,
             magicAppleDeviceChecked: false,
             cornerEventEmitted: false,
             lenis: null,
-            scrollStartTime: null,
             lastWheelDirection: null,
             easingDict: {
                 default (x) {
@@ -97,8 +84,9 @@ export default {
             let duration = this.duration;
             if (options?.appleMagic) {
                 wheelMultiplier /= 3;
-                duration /= 2;
+                duration /= 5;
             }
+            this.actualCornerEventDelay = this.cornerEventDelay;
             return new Lenis({
                 lerp: this.lerp,
                 easing: this.easingDict[this.easing],
@@ -113,10 +101,7 @@ export default {
             requestAnimationFrame(this.raf);
         },
         lenisScroll (e) {
-            console.log('lenisScroll');
-            this.scrollValue = this.lenis.progress;
             this.$emit('scroll', e);
-            this.$nuxt.$emit('scroll', e);
         },
         swipe (direction) {
             return;
@@ -132,20 +117,23 @@ export default {
             const isTouchPad = e.wheelDeltaY ? e.wheelDeltaY === -3 * e.deltaY : e.deltaMode === 0;
             return this.$device.isMacOS && isTouchPad;
         },
-        wheelScroll (e) {
-            if (!this.scrollValue) {
-                this.scrollValue = this.lenis.progress;
-            }
-            if (!this.magicAppleDeviceChecked && this.isMagicAppleDevice(e)) {
+        setAppleMagicDeviceSettings (e) {
+            if (this.isMagicAppleDevice(e)) {
                 this.lenis = this.getLenis({ appleMagic: true });
+                this.actualCornerEventDelay = this.cornerEventDelay + this.duration;
             }
             this.magicAppleDeviceChecked = true;
+        },
+        wheelScroll (e) {
+            if (!this.magicAppleDeviceChecked) {
+                this.setAppleMagicDeviceSettings(e);
+            }
 
             const currentWheelDirection = e.deltaY > 0 ? 1 : -1;
-            const cornerTermZero = this.scrollValue < 0.001 && currentWheelDirection === -1;
-            const cornerTermOne = this.scrollValue > 0.999 && currentWheelDirection === 1;
+            const cornerTermZero = this.lenis.progress < 0.002 && currentWheelDirection === -1;
+            const cornerTermOne = this.lenis.progress > 0.998 && currentWheelDirection === 1;
+
             if (!this.corneredTime && (cornerTermZero || cornerTermOne)) {
-                this.reachedCorner = this.scrollValue;
                 this.corneredTime = Date.now();
             }
 
@@ -154,14 +142,15 @@ export default {
             }
 
             this.lastWheelDirection = currentWheelDirection;
-            if (this.corneredTime && (Date.now() - this.corneredTime > this.cornerEventDelay)) {
+
+            if (this.corneredTime && (Date.now() - this.corneredTime > this.actualCornerEventDelay)) {
                 if (!this.cornerEventEmitted && (cornerTermZero || cornerTermOne)) {
-                    this.$emit('corner', cornerTermOne ? 1 : 0);
                     this.corneredTime = null;
+                    this.$emit('corner', cornerTermOne ? 1 : 0);
                     this.cornerEventEmitted = true;
                     setTimeout(() => {
                         this.cornerEventEmitted = false;
-                    }, this.cornerEventDelay * 2);
+                    }, this.actualCornerEventDelay * 2);
                 }
             }
         },
@@ -170,10 +159,8 @@ export default {
 </script>
 
 <style lang="scss">
-.LenisScroll {
-    //height: auto;
-    //height: 100vh;
-    //overflow-y: scroll;
+html.lenis {
+    height: auto;
 }
 .lenis.lenis-smooth {
     scroll-behavior: auto;
@@ -182,7 +169,7 @@ export default {
     overscroll-behavior: contain;
 }
 .lenis.lenis-stopped {
-    //overflow: hidden;
+    overflow: hidden;
 }
 .lenis.lenis-scrolling iframe {
     pointer-events: none;

@@ -14,11 +14,6 @@ export default {
     mounted () {
     },
     methods: {
-        test (e) {
-            console.log('test12313131323123');
-            // console.log(e)
-            console.log();
-        },
         lenisScroll (e) {
             this.$nuxt.$emit('lenisScroll', e);
         },

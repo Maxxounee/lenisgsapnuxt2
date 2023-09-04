@@ -54,13 +54,10 @@ export default {
 	],
 
 	// Modules: https://go.nuxtjs.dev/config-modules
-	modules: [
-		// 'nuxt-lenis',
-	],
+	modules: [],
 
 	// Build Configuration: https://go.nuxtjs.dev/config-build
 	build: {
 		postcss: null,
-		// transpile: ['gsap'],
 	},
 };
